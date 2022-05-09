@@ -15,14 +15,13 @@ pid_t getlcapid(pid_t pid1, pid_t pid2)
         message m;
         m.m_u32.data[0] = pid1;
         m.m_u32.data[1] = pid2;
-        printf("hw from funkcja biblioteczna, pidy to %d %d\n", pid1, pid2);
         if (get_pm_endpt(&pm_pt) != 0)
         {
                 errno = ENOSYS;
                 return -1;
         }
+
         int ret_value = _syscall(pm_pt, PM_GETLCAPID, &m);
-        printf("errno to %d ret_value = %d\n", errno, ret_value);
         if (ret_value != 0)
         {
             // dla pewności doustawiam errno bo nie zawsze się ustawia
@@ -34,6 +33,6 @@ pid_t getlcapid(pid_t pid1, pid_t pid2)
         {
             return -1; // errno się ustawiło w syscallu
         }
-        printf("zwrocony pid to %d\n", m.m_u32.data[0]);
+
         return m.m_u32.data[0];
 }

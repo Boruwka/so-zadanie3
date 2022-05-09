@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "pm.h"
-#include "mproc.h" // ten tajemniczy include przyda się nam w zadaniu 3 ;)
-#include <limits.h> // w sumie to ten też
+#include "mproc.h"
+#include <limits.h>
 #include <errno.h>
 
 int get_parent_idx(int idx)
@@ -25,7 +25,7 @@ int get_idx_from_pid(pid_t pid)
             return i;
         }
     }
-    return -1;
+    return -1; // nie ma takiego procesu
 }
 
 pid_t get_pid_from_idx(int idx)
@@ -34,11 +34,11 @@ pid_t get_pid_from_idx(int idx)
     return res;
 }
 
-int MAX_NR_OF_PROCESSES = 256;
+int MAX_NR_OF_PROCESSES = 256; // w minixie
 
+// -1 EINVAL -2 ESRCH
 pid_t find_lca(pid_t pid1, pid_t pid2)
 {
-    printf("witamy w funkcji syscallowej pidy to %d %d\n", pid1, pid2);
     int path_end1 = 0;
     int path_end2 = 0; // długość ścieżek pid1 i pid2 do korzenia
     int path1[MAX_NR_OF_PROCESSES];
@@ -52,20 +52,12 @@ pid_t find_lca(pid_t pid1, pid_t pid2)
 
     int idx1 = get_idx_from_pid(pid1);
     int idx2 = get_idx_from_pid(pid2);
-    printf("indeksy to %d %d\n", idx1, idx2);
 
     if (idx1 == -1 || idx2 == -1)
     {
-        //printf("indeksy nie istnieja, zwracamy errno = %d\n", EINVAL);
         return -1;
         // któryś nie jest aktualnie działającym procesem
     }
-
-    /*if (idx1 == idx2)
-    {
-        // ten sam proces - lca nie istnieje
-        return -2;
-    }*/
 
     path1[0] = get_parent_idx(idx1);
     path2[0] = get_parent_idx(idx2);
@@ -99,6 +91,7 @@ pid_t find_lca(pid_t pid1, pid_t pid2)
     int path_idx1 = path_end1 - 1;
     int path_idx2 = path_end2 - 1;
 
+    // przegląda ścieżki przodków aby znaleźć lca
     for (int i = 0; i < MAX_NR_OF_PROCESSES; i++)
     {
         if (path1[path_idx1] == path2[path_idx2])
@@ -113,7 +106,6 @@ pid_t find_lca(pid_t pid1, pid_t pid2)
         {
             if (res == -1)
             {
-                //errno = ESRCH;
                 return -2;
             }
             else
@@ -131,21 +123,21 @@ int do_getlcapid(void)
 {
     pid_t pid1 = m_in.m_u32.data[0];
     pid_t pid2 = m_in.m_u32.data[1];
-    printf("Hello world from pm, pids are %d and %d\n", pid1, pid2);
     pid_t res = find_lca(pid1, pid2);
-    //mp->mp_reply.m_u32.data[0] = 0;
+    // -1 jeśli procesy nie istnieją, -2 jeśli lca nie istnieje
+    // w przeciwnym razie pid lca
+
     if (res == -1)
     {
         errno = EINVAL;
-        printf("bedziemy zwracac einval = %d\n", errno);
         return -errno;
     }
     if (res == -2)
     {
         errno = ESRCH;
-        printf("bedziemy zwracac ersch = %d\n", errno);
         return -errno;
     }
+
     mp->mp_reply.m_u32.data[0] = res; 
     return 0;
 }

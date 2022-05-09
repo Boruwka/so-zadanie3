@@ -7,6 +7,7 @@ int get_pm_endpt(endpoint_t *pt)
         return minix_rs_lookup("pm", pt);
 }
 
+
 pid_t getlcapid(pid_t pid1, pid_t pid2)
 {
         endpoint_t pm_pt;

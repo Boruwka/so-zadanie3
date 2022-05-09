@@ -5,6 +5,8 @@
 
 int do_getlcapid(void)
 {
-    printf("Hello world from pm\n");
+    pid_t pid1 = m_in.m_u32.data[0];
+    pid_t pid2 = m_in.m_u32.data[1];
+    printf("Hello world from pm, pids are %d and %d\n", pid1, pid2);
     return 0;
 }
